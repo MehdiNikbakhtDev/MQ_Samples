@@ -28,21 +28,21 @@ channel.ExchangeDeclare(
     null);
 
 channel.QueueDeclare(
-    "my.queue1.WithProg",
+    "FanoutQueue.queue1.WithProg",
     true,
     false,
     false,
     null);
 
 channel.QueueDeclare(
-    "my.queue2.WithProg",
+    "FanoutQueue.queue2.WithProg",
     true,
     false,
     false,
     null);
 
-channel.QueueBind("my.queue1.WithProg", "ex.fanout.WithProg", "");
-channel.QueueBind("my.queue2.WithProg", "ex.fanout.WithProg", "");
+channel.QueueBind("FanoutQueue.queue1.WithProg", "ex.fanout.WithProg", "");
+channel.QueueBind("FanoutQueue.queue2.WithProg", "ex.fanout.WithProg", "");
 
 channel.BasicPublish(
     "ex.fanout.WithProg",

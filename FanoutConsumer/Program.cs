@@ -28,7 +28,7 @@ class Program
         var consumer = new EventingBasicConsumer(channel);
         consumer.Received += Consumer_Received;
 
-        var consumerTag = channel.BasicConsume("my.queue1.WithProg", false, consumer);
+        var consumerTag = channel.BasicConsume("FanoutQueue.queue1.WithProg", false, consumer);
         //var consumerTag1 = channel.BasicConsume("my.queue2.WithProg", false, consumer);
 
         Console.WriteLine("Waiting for messages. Press any key to exit.");
