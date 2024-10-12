@@ -7,7 +7,8 @@ using ReqRes.Common;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using  Constants = ReqRes.Common.Constants;
+using Constants = ReqRes.Common.Constants;
+
 namespace Replier
 {
     class Program
@@ -49,9 +50,11 @@ namespace Replier
                 basicProperties.Headers = new Dictionary<string, object>();
                 basicProperties.Headers.Add(Constants.RequestIdHeaderKey, e.BasicProperties.Headers[Constants.RequestIdHeaderKey]);
 
+                string responseQueueName = Encoding.UTF8.GetString((byte[])e.BasicProperties.Headers[Constants.ResponseQueueHeaderKey]);
+
                 channel.BasicPublish(
                 "",
-                "responses",
+                responseQueueName,
                 basicProperties,
                 Encoding.UTF8.GetBytes(responseData));
             };
