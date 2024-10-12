@@ -29,6 +29,9 @@ namespace Requestor
             IConnection conn = factory.CreateConnection();
             IModel channel = conn.CreateModel();
 
+            string responseQueueName = "res." + Guid.NewGuid().ToString();
+            channel.QueueDeclare(responseQueueName);
+
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += (sender, e) =>
               {
@@ -44,15 +47,15 @@ namespace Requestor
                   }
               };
 
-            channel.BasicConsume("responses", true, consumer);
+            channel.BasicConsume(responseQueueName, true, consumer);
 
             Console.WriteLine("Press a key to send requests");
             Console.ReadKey();
 
-            sendRequest(waitingRequests, channel, new CalculationRequest(2, 4, OperationType.Add));
-            sendRequest(waitingRequests, channel, new CalculationRequest(8, 6, OperationType.Subtract));
-            sendRequest(waitingRequests, channel, new CalculationRequest(20, 7, OperationType.Add));            
-            sendRequest(waitingRequests, channel, new CalculationRequest(50, 8, OperationType.Subtract));
+            sendRequest(waitingRequests, channel, new CalculationRequest(2, 4, OperationType.Add), responseQueueName);
+            sendRequest(waitingRequests, channel, new CalculationRequest(14, 6, OperationType.Subtract), responseQueueName);
+            sendRequest(waitingRequests, channel, new CalculationRequest(50, 2, OperationType.Add), responseQueueName);            
+            sendRequest(waitingRequests, channel, new CalculationRequest(30, 6, OperationType.Subtract), responseQueueName);
 
             Console.ReadKey();
 
@@ -62,7 +65,7 @@ namespace Requestor
 
         private static void sendRequest(
             ConcurrentDictionary<string, CalculationRequest> waitingRequest, 
-            IModel channel, CalculationRequest request)
+            IModel channel, CalculationRequest request, string responseQueueName)
         {
             string requestId = Guid.NewGuid().ToString();
             string requestData = JsonConvert.SerializeObject(request);
@@ -72,6 +75,7 @@ namespace Requestor
             var basicProperties = channel.CreateBasicProperties();
             basicProperties.Headers = new Dictionary<string, object>();
             basicProperties.Headers.Add(Constants.RequestIdHeaderKey, Encoding.UTF8.GetBytes(requestId));
+            basicProperties.Headers.Add(Constants.ResponseQueueHeaderKey, Encoding.UTF8.GetBytes(responseQueueName));
 
             channel.BasicPublish(
                 "", 
